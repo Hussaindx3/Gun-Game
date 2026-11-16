@@ -2,7 +2,7 @@
 
 ## Project Planning
 
-- [Project board](PASTE-YOUR-BOARD-URL-HERE)
+- [Project board](https://github.com/users/Hussaindx3/projects/2)
 - [Wireframe](./wireframe.png)
 
 ### Sprint 1
