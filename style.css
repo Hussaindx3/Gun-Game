@@ -1,0 +1,54 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background-color: #1e293b;
+  color: white;
+  padding-top: 40px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  margin: 5px;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
+}
+
+#rules-box {
+  background: #334155;
+  padding: 20px;
+  margin: 20px auto;
+  width: 320px;
+  border-radius: 8px;
+}
+
+.arena {
+  position: relative;
+  width: 600px;
+  height: 350px;
+  background: #0f172a;
+  border: 2px solid #38bdf8;
+  margin: 20px auto;
+}
+
+.target {
+  width: 50px;
+  height: 50px;
+  background: red;
+  border-radius: 50%;
+  position: absolute;
+  top: 40px;
+  left: 275px;
+}
+
+.gun {
+  width: 30px;
+  height: 50px;
+  background: gray;
+  position: absolute;
+  bottom: 10px;
+  left: 285px;
+}
