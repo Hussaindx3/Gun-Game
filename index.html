@@ -2,32 +2,40 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Gun Challenge</title>
+  <title>Gun Challenge - Stage 1</title>
   <link rel="stylesheet" href="style.css" />
   <script defer src="app.js"></script>
 </head>
 <body>
-  <h1>Gun Challenge</h1>
+  <div class="game-container">
+    <h1>Gun Challenge</h1>
+    <p class="subtitle">Stage 1: Target Practice</p>
 
-  <!-- Start Screen -->
-  <div id="start-screen">
-    <button id="start-btn">Start Game</button>
-    <button id="rules-btn">How to Play</button>
-  </div>
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen">
+      <button id="start-btn" class="btn">Start Game</button>
+      <button id="rules-btn" class="btn secondary">How to Play</button>
+    </div>
 
-  <!-- Instructions Modal (Card 1) -->
-  <div id="rules-box" class="hidden">
-    <h3>How to Play</h3>
-    <p>Aim with the mouse and click to shoot moving targets. Miss more than 3 shots and you lose!</p>
-    <button id="close-rules-btn">Close</button>
-  </div>
+    <!-- Instructions Modal -->
+    <div id="rules-box" class="modal hidden">
+      <h3>How to Play</h3>
+      <p>Aim with your mouse inside the arena and click to shoot targets. Miss more than 3 shots and you lose!</p>
+      <button id="close-rules-btn" class="btn">Got it</button>
+    </div>
 
-  <!-- Initial Game Board (Card 2) -->
-  <div id="game-board" class="hidden">
-    <p>Stage: <span id="stage">1</span> | Score: <span id="score">0</span> | Missed: <span id="missed">0</span>/3</p>
-    <div class="arena">
-      <div class="target"></div>
-      <div class="gun"></div>
+    <!-- Game Board (Stage 1) -->
+    <div id="game-board" class="hidden">
+      <div class="hud">
+        <span>Stage: <strong id="stage">1</strong></span>
+        <span>Score: <strong id="score">0</strong></span>
+        <span>Missed: <strong id="missed">0</strong>/3</span>
+      </div>
+
+      <div id="arena" class="arena">
+        <div id="targets-container"></div>
+        <div class="gun"></div>
+      </div>
     </div>
   </div>
 </body>
