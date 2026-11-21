@@ -2,41 +2,80 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Gun Challenge - Stage 1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gun Challenge - Sniper Game</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='44' fill='%230f172a' stroke='%2338bdf8' stroke-width='8'/><circle cx='50' cy='50' r='26' fill='none' stroke='%23ef4444' stroke-width='6'/><circle cx='50' cy='50' r='8' fill='%23ef4444'/><line x1='50' y1='4' x2='50' y2='24' stroke='%2338bdf8' stroke-width='6'/><line x1='50' y1='76' x2='50' y2='96' stroke='%2338bdf8' stroke-width='6'/><line x1='4' y1='50' x2='24' y2='50' stroke='%2338bdf8' stroke-width='6'/><line x1='76' y1='50' x2='96' y2='50' stroke='%2338bdf8' stroke-width='6'/></svg>" />
   <link rel="stylesheet" href="style.css" />
   <script defer src="app.js"></script>
 </head>
 <body>
-  <div class="game-container">
-    <h1>Gun Challenge</h1>
-    <p class="subtitle">Stage 1: Target Practice</p>
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="game-header">
+      <div class="title-group">
+        <h1>Gun Challenge</h1>
+        <p class="subtitle" id="stage-title">Stage 1: Desert Outpost</p>
+      </div>
+      <div class="header-controls">
+        <button id="instructions-btn" class="btn secondary-btn">How to Play</button>
+        <button id="restart-btn" class="btn secondary-btn">Restart</button>
+      </div>
+    </header>
 
-    <!-- Start Screen -->
-    <div id="start-screen" class="screen">
-      <button id="start-btn" class="btn">Start Game</button>
-      <button id="rules-btn" class="btn secondary">How to Play</button>
-    </div>
+    <!-- Heads-Up Display (HUD) -->
+    <section class="hud-bar">
+      <div class="hud-item">
+        <span class="hud-label">Stage</span>
+        <span id="stage-display" class="hud-value">1 / 5</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Difficulty</span>
+        <span id="diff-display" class="hud-value">Easy</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Targets Left</span>
+        <span id="targets-display" class="hud-value">3</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Missed Shots</span>
+        <span id="missed-display" class="hud-value danger-text">0 / 3</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Score</span>
+        <span id="score-display" class="hud-value">0</span>
+      </div>
+    </section>
 
-    <!-- Instructions Modal -->
-    <div id="rules-box" class="modal hidden">
-      <h3>How to Play</h3>
-      <p>Aim with your mouse inside the arena and click to shoot targets. Miss more than 3 shots and you lose!</p>
-      <button id="close-rules-btn" class="btn">Got it</button>
-    </div>
+    <!-- Main Game Arena -->
+    <main id="game-arena" class="game-arena">
+      <div id="targets-layer" class="targets-layer"></div>
 
-    <!-- Game Board (Stage 1) -->
-    <div id="game-board" class="hidden">
-      <div class="hud">
-        <span>Stage: <strong id="stage">1</strong></span>
-        <span>Score: <strong id="score">0</strong></span>
-        <span>Missed: <strong id="missed">0</strong>/3</span>
+      <!-- Laser Weapon Player -->
+      <div id="weapon" class="weapon">
+        <div class="laser-sight"></div>
+        <div class="gun-barrel"></div>
+        <div class="gun-body"></div>
       </div>
 
-      <div id="arena" class="arena">
-        <div id="targets-container"></div>
-        <div class="gun"></div>
+      <!-- Start & Instructions Modal -->
+      <div id="game-modal" class="modal-overlay">
+        <div class="modal-box">
+          <h2>Gun Challenge</h2>
+          <p>
+            Move your mouse horizontally to aim and click inside the arena to shoot moving targets.<br><br>
+            <strong>5 Progressive Levels:</strong> Easy, Medium, Hard, Expert, and Master (Class Challenge!).<br>
+            <strong>Rule:</strong> If you miss <strong>more than 3 shots</strong> (4th miss), you lose!
+          </p>
+          <div class="stage-select-wrapper">
+            <label for="stage-select">Select Stage:</label>
+            <select id="stage-select"></select>
+          </div>
+          <div class="modal-actions">
+            <button id="start-game-btn" class="btn primary-btn">Play Now</button>
+          </div>
+        </div>
       </div>
-    </div>
+    </main>
   </div>
 </body>
 </html>
