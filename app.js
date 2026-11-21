@@ -14,6 +14,10 @@ let isPlaying = false;
 let animationFrameId = null;
 let weaponX = 480;
 
+/*----- Background Music State Variables -----*/
+let isMusicPlaying = false;
+let musicInterval = null;
+
 const arenaEl = document.getElementById('game-arena');
 const targetsLayerEl = document.getElementById('targets-layer');
 const weaponEl = document.getElementById('weapon');
@@ -35,6 +39,7 @@ const stageSelectEl = document.getElementById('stage-select');
 const startGameBtn = document.getElementById('start-game-btn');
 const instructionsBtn = document.getElementById('instructions-btn');
 const restartBtn = document.getElementById('restart-btn');
+const musicToggleBtn = document.getElementById('music-toggle-btn');
 
 function init() {
   populateStageDropdown();
@@ -146,7 +151,7 @@ function handleAim(e) {
 
 function handleShoot(e) {
   if (!isPlaying) return;
-  if (e.target.closest('.modal-overlay') || e.target.closest('.center-banner')) return;
+  if (e.target.closest('.modal-overlay') || e.target.closest('.center-banner') || e.target.closest('.header-controls')) return;
 
   weaponEl.classList.add('recoil');
   setTimeout(() => weaponEl.classList.remove('recoil'), 80);
@@ -167,6 +172,10 @@ function handleShoot(e) {
 
   if (hitIndex !== -1) {
     const hitTarget = activeTargets[hitIndex];
+    
+    /* Play Hit Sound Effect */
+    playShootSound(true);
+
     renderBulletTracer(weaponX, hitTarget.y + hitTarget.size / 2);
     showFeedback(weaponX, hitTarget.y, `+${stageConfig.pointsPerHit}`, 'hit-pop');
 
@@ -177,6 +186,9 @@ function handleShoot(e) {
     updateHUD();
     checkStageProgress();
   } else {
+    /* Play Miss Sound Effect */
+    playShootSound(false);
+
     renderBulletTracer(weaponX, 0);
     showFeedback(weaponX, arenaEl.clientHeight - 115, 'MISS!', 'miss-pop');
 
@@ -280,6 +292,84 @@ function updateHUD() {
   missedDisplayEl.textContent = `${missedShots} / ${MAX_ALLOWED_MISSES}`;
   scoreDisplayEl.textContent = score;
 }
+
+/*----- Web Audio API Sound Generator for Gun Shots -----*/
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playShootSound(isHit) {
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+
+  const oscillator = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+
+  oscillator.type = isHit ? 'triangle' : 'sawtooth';
+  
+  const startFreq = isHit ? 520 : 180;
+  const endFreq = isHit ? 110 : 40;
+
+  oscillator.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
+  oscillator.frequency.exponentialRampToValueAtTime(endFreq, audioCtx.currentTime + 0.15);
+
+  gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+
+  oscillator.start();
+  oscillator.stop(audioCtx.currentTime + 0.15);
+}
+
+/*----- Relaxing & Upbeat Melodic Background Music Generator -----*/
+const melodyNotes = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63]; // C4, E4, G4, C5, G4, E4
+let melodyIndex = 0;
+
+function playComfortableBeat() {
+  if (!isMusicPlaying) return;
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  // Using 'triangle' wave for a smooth, relaxing, and comfortable sound tone
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(melodyNotes[melodyIndex % melodyNotes.length], audioCtx.currentTime);
+  melodyIndex++;
+
+  // Low volume to keep it ambient and relaxing in the background
+  gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.4);
+}
+
+function toggleBackgroundMusic() {
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+
+  isMusicPlaying = !isMusicPlaying;
+
+  if (isMusicPlaying) {
+    musicToggleBtn.textContent = '🎵 Music: ON';
+    musicToggleBtn.style.background = '#22c55e';
+    musicToggleBtn.style.color = '#0f172a';
+    musicInterval = setInterval(playComfortableBeat, 350);
+  } else {
+    musicToggleBtn.textContent = '🎵 Music: OFF';
+    musicToggleBtn.style.background = '#334155';
+    musicToggleBtn.style.color = '#f1f5f9';
+    clearInterval(musicInterval);
+  }
+}
+
+musicToggleBtn.addEventListener('click', toggleBackgroundMusic);
 
 arenaEl.addEventListener('mousemove', handleAim);
 arenaEl.addEventListener('mousedown', handleShoot);
