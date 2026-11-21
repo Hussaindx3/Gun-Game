@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gun Challenge - Sniper Game</title>
+  <title>Gun Game - Moving Target Sniper Game</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='44' fill='%230f172a' stroke='%2338bdf8' stroke-width='8'/><circle cx='50' cy='50' r='26' fill='none' stroke='%23ef4444' stroke-width='6'/><circle cx='50' cy='50' r='8' fill='%23ef4444'/><line x1='50' y1='4' x2='50' y2='24' stroke='%2338bdf8' stroke-width='6'/><line x1='50' y1='76' x2='50' y2='96' stroke='%2338bdf8' stroke-width='6'/><line x1='4' y1='50' x2='24' y2='50' stroke='%2338bdf8' stroke-width='6'/><line x1='76' y1='50' x2='96' y2='50' stroke='%2338bdf8' stroke-width='6'/></svg>" />
   <link rel="stylesheet" href="style.css" />
   <script defer src="app.js"></script>
@@ -13,8 +13,8 @@
     <!-- Top Header -->
     <header class="game-header">
       <div class="title-group">
-        <h1>Gun Challenge</h1>
-        <p class="subtitle" id="stage-title">Stage 1: Desert Outpost</p>
+        <h1>Gun Game</h1>
+        <p class="subtitle" id="stage-theme-name">Stage 1: Desert Outpost</p>
       </div>
       <div class="header-controls">
         <button id="instructions-btn" class="btn secondary-btn">How to Play</button>
@@ -26,15 +26,15 @@
     <section class="hud-bar">
       <div class="hud-item">
         <span class="hud-label">Stage</span>
-        <span id="stage-display" class="hud-value">1 / 5</span>
+        <span id="stage-display" class="hud-value">1 / 2</span>
       </div>
       <div class="hud-item">
         <span class="hud-label">Difficulty</span>
-        <span id="diff-display" class="hud-value">Easy</span>
+        <span id="difficulty-display" class="hud-value">Easy</span>
       </div>
       <div class="hud-item">
         <span class="hud-label">Targets Left</span>
-        <span id="targets-display" class="hud-value">3</span>
+        <span id="targets-display" class="hud-value">4</span>
       </div>
       <div class="hud-item">
         <span class="hud-label">Missed Shots</span>
@@ -47,24 +47,30 @@
     </section>
 
     <!-- Main Game Arena -->
-    <main id="game-arena" class="game-arena">
+    <main id="game-arena" class="game-arena theme-1">
       <div id="targets-layer" class="targets-layer"></div>
 
-      <!-- Laser Weapon Player -->
+      <!-- Player Weapon -->
       <div id="weapon" class="weapon">
-        <div class="laser-sight"></div>
+        <div class="gun-sight"></div>
         <div class="gun-barrel"></div>
         <div class="gun-body"></div>
+      </div>
+
+      <!-- Center Win/Loss Banner -->
+      <div id="center-banner" class="center-banner hidden">
+        <h2 id="banner-title">YOU LOSE!</h2>
+        <p id="banner-subtext">You missed more than 3 shots!</p>
+        <button id="banner-action-btn" class="btn primary-btn">Try Again</button>
       </div>
 
       <!-- Start & Instructions Modal -->
       <div id="game-modal" class="modal-overlay">
         <div class="modal-box">
-          <h2>Gun Challenge</h2>
-          <p>
-            Move your mouse horizontally to aim and click inside the arena to shoot moving targets.<br><br>
-            <strong>5 Progressive Levels:</strong> Easy, Medium, Hard, Expert, and Master (Class Challenge!).<br>
-            <strong>Rule:</strong> If you miss <strong>more than 3 shots</strong> (4th miss), you lose!
+          <h2 id="modal-title">Gun Game</h2>
+          <p id="modal-message">
+            Move your mouse horizontally to aim and click inside the arena to shoot.<br><br>
+            <strong>Rule:</strong> 2 progressive stages with moving targets. If you miss <strong>more than 3 shots</strong> (4th miss), you lose!
           </p>
           <div class="stage-select-wrapper">
             <label for="stage-select">Select Stage:</label>

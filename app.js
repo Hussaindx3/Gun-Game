@@ -1,224 +1,299 @@
-const stages = [
-  { level: 1, name: 'Desert Outpost', diff: 'Easy', count: 3, speed: 1.5, size: 50, pts: 10, shape: 'shape-circle' },
-  { level: 2, name: 'Forest Range', diff: 'Medium', count: 4, speed: 2.3, size: 45, pts: 20, shape: 'shape-circle' },
-  { level: 3, name: 'Canyon Sunset', diff: 'Hard', count: 5, speed: 3.2, size: 40, pts: 30, shape: 'shape-circle' },
-  { level: 4, name: 'Cyber Neon', diff: 'Expert', count: 6, speed: 4.0, size: 36, pts: 40, shape: 'shape-circle' },
-  { level: 5, name: 'Master Fortress (Class Challenge)', diff: 'MASTER', count: 8, speed: 5.0, size: 34, pts: 100, shape: 'shape-gold' }
+/*----- Game Stages Data (2 Progressive Stages) -----*/
+const STAGES_DATA = [
+  { stage: 1, name: 'Desert Outpost', theme: 'theme-1', difficulty: 'Easy', targetCount: 4, shape: 'shape-circle', speed: 2.2, verticalSpeed: 0, size: 64, pointsPerHit: 10 },
+  { stage: 2, name: 'Forest Range', theme: 'theme-2', difficulty: 'Medium', targetCount: 5, shape: 'shape-square', speed: 2.7, verticalSpeed: 0, size: 60, pointsPerHit: 15 }
 ];
 
-const maxAllowedMiss = 3;
-
-const arena = document.getElementById('game-arena');
-const targetsLayer = document.getElementById('targets-layer');
-const weapon = document.getElementById('weapon');
-
-const stageTitle = document.getElementById('stage-title');
-const stageDisplay = document.getElementById('stage-display');
-const diffDisplay = document.getElementById('diff-display');
-const targetsDisplay = document.getElementById('targets-display');
-const missedDisplay = document.getElementById('missed-display');
-const scoreDisplay = document.getElementById('score-display');
-
-const modal = document.getElementById('game-modal');
-const stageSelect = document.getElementById('stage-select');
-const startGameBtn = document.getElementById('start-game-btn');
-const instructionsBtn = document.getElementById('instructions-btn');
-const restartBtn = document.getElementById('restart-btn');
+const MAX_ALLOWED_MISSES = 3;
 
 let currentStageIndex = 0;
 let score = 0;
 let missedShots = 0;
-let targets = [];
+let activeTargets = [];
 let isPlaying = false;
-let animId = null;
-let weaponX = 400;
+let animationFrameId = null;
+let weaponX = 480;
+
+const arenaEl = document.getElementById('game-arena');
+const targetsLayerEl = document.getElementById('targets-layer');
+const weaponEl = document.getElementById('weapon');
+const stageThemeNameEl = document.getElementById('stage-theme-name');
+
+const stageDisplayEl = document.getElementById('stage-display');
+const difficultyDisplayEl = document.getElementById('difficulty-display');
+const targetsDisplayEl = document.getElementById('targets-display');
+const missedDisplayEl = document.getElementById('missed-display');
+const scoreDisplayEl = document.getElementById('score-display');
+
+const centerBannerEl = document.getElementById('center-banner');
+const bannerTitleEl = document.getElementById('banner-title');
+const bannerSubtextEl = document.getElementById('banner-subtext');
+const bannerActionBtn = document.getElementById('banner-action-btn');
+
+const modalEl = document.getElementById('game-modal');
+const stageSelectEl = document.getElementById('stage-select');
+const startGameBtn = document.getElementById('start-game-btn');
+const instructionsBtn = document.getElementById('instructions-btn');
+const restartBtn = document.getElementById('restart-btn');
 
 function init() {
-  stageSelect.innerHTML = '';
-  stages.forEach((s, idx) => {
-    const opt = document.createElement('option');
-    opt.value = idx;
-    opt.textContent = `Stage ${s.level}: ${s.name} (${s.diff})`;
-    stageSelect.appendChild(opt);
+  populateStageDropdown();
+  updateHUD();
+}
+
+function populateStageDropdown() {
+  stageSelectEl.innerHTML = '';
+  STAGES_DATA.forEach((item, index) => {
+    const option = document.createElement('option');
+    option.value = index;
+    option.textContent = `Stage ${item.stage}: ${item.name} (${item.difficulty})`;
+    stageSelectEl.appendChild(option);
   });
 }
 
-function startNewGame(index) {
-  currentStageIndex = index;
+function startNewGame(startIndex = 0) {
+  currentStageIndex = startIndex;
   score = 0;
   missedShots = 0;
   loadStage(currentStageIndex);
 }
 
 function loadStage(index) {
-  cancelAnimationFrame(animId);
-  targetsLayer.innerHTML = '';
-  targets = [];
-  modal.classList.add('hidden');
+  cancelAnimationFrame(animationFrameId);
+  targetsLayerEl.innerHTML = '';
+  activeTargets = [];
+  centerBannerEl.classList.add('hidden');
+  modalEl.classList.add('hidden');
 
-  const data = stages[index];
-  stageTitle.textContent = `Stage ${data.level}: ${data.name}`;
-  stageDisplay.textContent = `${data.level} / ${stages.length}`;
-  diffDisplay.textContent = data.diff;
-  updateHUD();
+  const stageConfig = STAGES_DATA[index];
+  const arenaWidth = arenaEl.clientWidth;
 
-  const width = arena.clientWidth;
+  arenaEl.className = `game-arena ${stageConfig.theme}`;
+  stageThemeNameEl.textContent = `Stage ${stageConfig.stage}: ${stageConfig.name}`;
 
-  for (let i = 0; i < data.count; i++) {
-    const startX = Math.random() * (width - data.size - 40) + 20;
-    const startY = 40 + (i % 3) * 55;
-    const dir = i % 2 === 0 ? 1 : -1;
+  for (let i = 0; i < stageConfig.targetCount; i++) {
+    const rowY = 35 + (i % 4) * 72;
+    const startX = Math.random() * (arenaWidth - stageConfig.size);
+    const dirX = i % 2 === 0 ? 1 : -1;
+    const dirY = i % 3 === 0 ? 1 : -1;
 
-    const el = document.createElement('div');
-    el.className = `target-board ${data.shape}`;
-    el.style.width = `${data.size}px`;
-    el.style.height = `${data.size}px`;
-    el.style.left = `${startX}px`;
-    el.style.top = `${startY}px`;
+    const targetEl = document.createElement('div');
+    targetEl.classList.add('target-board', stageConfig.shape);
+    targetEl.style.width = `${stageConfig.size}px`;
+    targetEl.style.height = `${stageConfig.size}px`;
+    targetEl.style.top = `${rowY}px`;
+    targetEl.style.left = `${startX}px`;
 
-    targetsLayer.appendChild(el);
+    targetsLayerEl.appendChild(targetEl);
 
-    targets.push({
-      el: el,
+    activeTargets.push({
+      element: targetEl,
       x: startX,
-      y: startY,
-      size: data.size,
-      vx: data.speed * dir
+      y: rowY,
+      size: stageConfig.size,
+      vx: stageConfig.speed * dirX,
+      vy: stageConfig.verticalSpeed * dirY
     });
   }
 
   isPlaying = true;
+  updateHUD();
   gameLoop();
 }
 
 function gameLoop() {
   if (!isPlaying) return;
 
-  const width = arena.clientWidth;
+  const arenaWidth = arenaEl.clientWidth;
+  const maxAllowedY = 310;
 
-  targets.forEach(t => {
-    t.x += t.vx;
-    if (t.x <= 0) {
-      t.x = 0;
-      t.vx *= -1;
-    } else if (t.x + t.size >= width) {
-      t.x = width - t.size;
-      t.vx *= -1;
+  activeTargets.forEach((target) => {
+    target.x += target.vx;
+    target.y += target.vy;
+
+    if (target.x <= 0) {
+      target.x = 0;
+      target.vx *= -1;
+    } else if (target.x + target.size >= arenaWidth) {
+      target.x = arenaWidth - target.size;
+      target.vx *= -1;
     }
-    t.el.style.left = `${t.x}px`;
+
+    if (target.y <= 25) {
+      target.y = 25;
+      target.vy *= -1;
+    } else if (target.y + target.size >= maxAllowedY) {
+      target.y = maxAllowedY - target.size;
+      target.vy *= -1;
+    }
+
+    target.element.style.left = `${target.x}px`;
+    target.element.style.top = `${target.y}px`;
   });
 
-  animId = requestAnimationFrame(gameLoop);
+  animationFrameId = requestAnimationFrame(gameLoop);
 }
 
-// Mouse aiming movement for weapon
-arena.addEventListener('mousemove', (e) => {
+function handleAim(e) {
   if (!isPlaying) return;
-  const rect = arena.getBoundingClientRect();
-  weaponX = e.clientX - rect.left;
-  weaponX = Math.max(25, Math.min(rect.width - 25, weaponX));
-  weapon.style.left = `${weaponX}px`;
-});
+  const rect = arenaEl.getBoundingClientRect();
+  let relativeX = e.clientX - rect.left;
 
-// Shooting & Laser Tracer Logic
-arena.addEventListener('click', (e) => {
+  relativeX = Math.max(25, Math.min(rect.width - 25, relativeX));
+  weaponX = relativeX;
+  weaponEl.style.left = `${weaponX}px`;
+}
+
+function handleShoot(e) {
   if (!isPlaying) return;
+  if (e.target.closest('.modal-overlay') || e.target.closest('.center-banner')) return;
 
-  const rect = arena.getBoundingClientRect();
-  const clickX = e.clientX - rect.left;
-  const clickY = e.clientY - rect.top;
+  weaponEl.classList.add('recoil');
+  setTimeout(() => weaponEl.classList.remove('recoil'), 80);
 
-  let hitIdx = -1;
-  for (let i = 0; i < targets.length; i++) {
-    const t = targets[i];
-    if (clickX >= t.x && clickX <= t.x + t.size && clickY >= t.y && clickY <= t.y + t.size) {
-      hitIdx = i;
-      break;
+  const stageConfig = STAGES_DATA[currentStageIndex];
+  let hitIndex = -1;
+  let hitY = 0;
+
+  for (let i = 0; i < activeTargets.length; i++) {
+    const t = activeTargets[i];
+    const withinHorizontalBounds = weaponX >= t.x && weaponX <= t.x + t.size;
+
+    if (withinHorizontalBounds && t.y > hitY) {
+      hitY = t.y;
+      hitIndex = i;
     }
   }
 
-  if (hitIdx !== -1) {
-    const t = targets[hitIdx];
-    const data = stages[currentStageIndex];
+  if (hitIndex !== -1) {
+    const hitTarget = activeTargets[hitIndex];
+    renderBulletTracer(weaponX, hitTarget.y + hitTarget.size / 2);
+    showFeedback(weaponX, hitTarget.y, `+${stageConfig.pointsPerHit}`, 'hit-pop');
 
-    renderLaserBeam(weaponX, t.y + t.size / 2);
-    score += data.pts;
-    showPop(clickX, clickY, `+${data.pts}`, 'hit-pop');
+    hitTarget.element.remove();
+    activeTargets.splice(hitIndex, 1);
+    score += stageConfig.pointsPerHit;
 
-    t.el.remove();
-    targets.splice(hitIdx, 1);
     updateHUD();
-
-    if (targets.length === 0) {
-      isPlaying = false;
-      cancelAnimationFrame(animId);
-
-      if (currentStageIndex < stages.length - 1) {
-        setTimeout(() => {
-          currentStageIndex++;
-          loadStage(currentStageIndex);
-        }, 800);
-      } else {
-        setTimeout(() => {
-          alert(`🏆 INCREDIBLE! You conquered all 5 stages and won the Master Class Challenge! Score: ${score}`);
-          modal.classList.remove('hidden');
-        }, 500);
-      }
-    }
+    checkStageProgress();
   } else {
-    renderLaserBeam(weaponX, 0);
+    renderBulletTracer(weaponX, 0);
+    showFeedback(weaponX, arenaEl.clientHeight - 115, 'MISS!', 'miss-pop');
+
     missedShots++;
     updateHUD();
-    showPop(clickX, clickY, 'MISS!', 'miss-pop');
 
-    if (missedShots > maxAllowedMiss) {
-      isPlaying = false;
-      cancelAnimationFrame(animId);
-      setTimeout(() => {
-        alert('💥 Game Over! You missed more than 3 shots.');
-        modal.classList.remove('hidden');
-      }, 300);
+    if (missedShots > MAX_ALLOWED_MISSES) {
+      triggerLossInCenter();
     }
   }
-});
+}
 
-function renderLaserBeam(x, targetY) {
-  const height = Math.max(10, arena.clientHeight - 55 - targetY);
-  const beam = document.createElement('div');
-  beam.className = 'laser-beam';
-  beam.style.left = `${x}px`;
-  beam.style.top = `${targetY}px`;
-  beam.style.height = `${height}px`;
+function checkStageProgress() {
+  if (activeTargets.length === 0) {
+    isPlaying = false;
+    cancelAnimationFrame(animationFrameId);
 
-  arena.appendChild(beam);
-  setTimeout(() => beam.remove(), 80);
+    if (currentStageIndex < STAGES_DATA.length - 1) {
+      currentStageIndex++;
+      showCenterBanner(
+        'STAGE CLEARED!',
+        `Next: Stage ${currentStageIndex + 1} - ${STAGES_DATA[currentStageIndex].name}`,
+        'Next Stage',
+        true,
+        () => loadStage(currentStageIndex)
+      );
+    } else {
+      showCenterBanner(
+        'YOU WIN!',
+        `You conquered both stages! Final Score: ${score}`,
+        'Play Again',
+        true,
+        () => startNewGame(0)
+      );
+    }
+  }
+}
+
+function triggerLossInCenter() {
+  isPlaying = false;
+  cancelAnimationFrame(animationFrameId);
+
+  showCenterBanner(
+    'YOU LOSE!',
+    `You missed ${missedShots} shots (Max allowed: 3). Score: ${score}`,
+    'Try Again',
+    false,
+    () => startNewGame(currentStageIndex)
+  );
+}
+
+function showCenterBanner(title, subtext, btnText, isWin, actionCallback) {
+  bannerTitleEl.textContent = title;
+  bannerSubtextEl.textContent = subtext;
+  bannerActionBtn.textContent = btnText;
+
+  if (isWin) {
+    centerBannerEl.classList.add('win-banner');
+  } else {
+    centerBannerEl.classList.remove('win-banner');
+  }
+
+  centerBannerEl.classList.remove('hidden');
+
+  bannerActionBtn.replaceWith(bannerActionBtn.cloneNode(true));
+  const freshBtn = document.getElementById('banner-action-btn');
+  freshBtn.addEventListener('click', actionCallback);
+}
+
+function renderBulletTracer(x, targetTopY) {
+  const arenaHeight = arenaEl.clientHeight;
+  const startY = arenaHeight - 45;
+  const height = Math.max(10, startY - targetTopY);
+
+  const tracer = document.createElement('div');
+  tracer.classList.add('bullet-tracer');
+  tracer.style.left = `${x}px`;
+  tracer.style.top = `${targetTopY}px`;
+  tracer.style.height = `${height}px`;
+
+  arenaEl.appendChild(tracer);
+  setTimeout(() => tracer.remove(), 120);
+}
+
+function showFeedback(x, y, text, className) {
+  const pop = document.createElement('div');
+  pop.classList.add('feedback-pop', className);
+  pop.style.left = `${x}px`;
+  pop.style.top = `${y}px`;
+  pop.textContent = text;
+
+  arenaEl.appendChild(pop);
+  setTimeout(() => pop.remove(), 600);
 }
 
 function updateHUD() {
-  targetsDisplay.textContent = targets.length;
-  missedDisplay.textContent = `${missedShots} / ${maxAllowedMiss}`;
-  scoreDisplay.textContent = score;
+  const stageConfig = STAGES_DATA[currentStageIndex];
+  stageDisplayEl.textContent = `${stageConfig.stage} / ${STAGES_DATA.length}`;
+  difficultyDisplayEl.textContent = stageConfig.difficulty;
+  targetsDisplayEl.textContent = activeTargets.length;
+  missedDisplayEl.textContent = `${missedShots} / ${MAX_ALLOWED_MISSES}`;
+  scoreDisplayEl.textContent = score;
 }
 
-function showPop(x, y, text, cls) {
-  const p = document.createElement('div');
-  p.className = `feedback-pop ${cls}`;
-  p.style.left = `${x}px`;
-  p.style.top = `${y}px`;
-  p.textContent = text;
-  arena.appendChild(p);
-  setTimeout(() => p.remove(), 500);
-}
+arenaEl.addEventListener('mousemove', handleAim);
+arenaEl.addEventListener('mousedown', handleShoot);
 
 startGameBtn.addEventListener('click', () => {
-  const sel = parseInt(stageSelect.value, 10) || 0;
-  startNewGame(sel);
+  const selectedStage = parseInt(stageSelectEl.value, 10) || 0;
+  startNewGame(selectedStage);
 });
 
 instructionsBtn.addEventListener('click', () => {
   isPlaying = false;
-  cancelAnimationFrame(animId);
-  modal.classList.remove('hidden');
+  cancelAnimationFrame(animationFrameId);
+  centerBannerEl.classList.add('hidden');
+  modalEl.classList.remove('hidden');
 });
 
 restartBtn.addEventListener('click', () => {

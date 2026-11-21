@@ -18,7 +18,7 @@ body {
 
 .app-container {
   width: 100%;
-  max-width: 920px;
+  max-width: 960px;
   display: grid;
   grid-template-rows: auto auto 1fr;
   gap: 14px;
@@ -83,16 +83,19 @@ body {
   color: #f87171;
 }
 
-/* Game Arena */
+/* Game Arena & Stage Themes */
 .game-arena {
   position: relative;
-  height: 480px;
-  background: linear-gradient(to bottom, #0284c7 0%, #38bdf8 65%, #1e293b 65%, #0f172a 100%);
+  height: 520px;
   border-radius: 14px;
   border: 3px solid #38bdf8;
   overflow: hidden;
   cursor: crosshair;
+  transition: background 0.5s ease;
 }
+
+.theme-1 { background: linear-gradient(to bottom, #38bdf8 0%, #bae6fd 72%, #eab308 72%, #ca8a04 100%); }
+.theme-2 { background: linear-gradient(to bottom, #0284c7 0%, #7dd3fc 72%, #22c55e 72%, #15803d 100%); }
 
 .targets-layer {
   position: relative;
@@ -100,84 +103,104 @@ body {
   height: 100%;
 }
 
-/* Target Styles */
+/* Target Board Styles */
 .target-board {
   position: absolute;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
 }
 
 .shape-circle {
   border-radius: 50%;
   background: #ffffff;
-  border: 3px solid #0f172a;
+  border: 4px solid #0f172a;
 }
 .shape-circle::before {
   content: '';
-  width: 60%;
-  height: 60%;
+  width: 64%;
+  height: 64%;
   border-radius: 50%;
-  border: 4px solid #ef4444;
+  border: 5px solid #ef4444;
 }
-
-.shape-gold {
-  border-radius: 50% 50% 10px 10px;
-  background: #fde047;
-  border: 3px solid #854d0e;
-}
-.shape-gold::after {
+.shape-circle::after {
   content: '';
-  width: 25%;
-  height: 25%;
+  position: absolute;
+  width: 24%;
+  height: 24%;
   border-radius: 50%;
-  background: #dc2626;
+  background: #ef4444;
 }
 
-/* Laser Weapon */
+.shape-square {
+  border-radius: 8px;
+  background: #fef3c7;
+  border: 4px solid #78350f;
+}
+.shape-square::before {
+  content: '';
+  width: 62%;
+  height: 62%;
+  border: 4px solid #d97706;
+}
+.shape-square::after {
+  content: '';
+  position: absolute;
+  width: 24%;
+  height: 24%;
+  background: #b45309;
+}
+
+/* Player Weapon */
 .weapon {
   position: absolute;
-  bottom: 8px;
+  bottom: 12px;
+  left: 50%;
   transform: translateX(-50%);
-  width: 36px;
-  height: 55px;
+  width: 46px;
+  height: 80px;
   pointer-events: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   z-index: 5;
+  transition: transform 0.05s ease;
 }
 
-.laser-sight {
+.gun-sight {
   width: 6px;
   height: 8px;
   background: #ef4444;
-  box-shadow: 0 0 8px #ef4444;
-  border-radius: 50%;
+  border-radius: 2px;
 }
 
 .gun-barrel {
-  width: 10px;
-  height: 26px;
+  width: 14px;
+  height: 44px;
   background: #cbd5e1;
   border: 2px solid #0f172a;
+  border-radius: 3px 3px 0 0;
 }
 
 .gun-body {
-  width: 32px;
-  height: 22px;
+  width: 40px;
+  height: 28px;
   background: #334155;
   border: 2px solid #0f172a;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
-/* Laser Tracer Beam Effect */
-.laser-beam {
+.weapon.recoil {
+  transform: translateX(-50%) translateY(9px);
+}
+
+/* Bullet Tracer / Laser Beam Effect */
+.bullet-tracer {
   position: absolute;
-  width: 3px;
-  background: #ef4444;
-  box-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444;
+  width: 4px;
+  background: #fde047;
+  box-shadow: 0 0 10px #facc15, 0 0 15px #f59e0b;
   pointer-events: none;
   transform: translateX(-50%);
   z-index: 4;
@@ -188,7 +211,8 @@ body {
   font-weight: 800;
   font-size: 1.05rem;
   pointer-events: none;
-  animation: floatUp 0.5s ease-out forwards;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  animation: floatUp 0.6s ease-out forwards;
   z-index: 10;
 }
 
@@ -197,14 +221,61 @@ body {
 
 @keyframes floatUp {
   0% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-30px); }
+  100% { opacity: 0; transform: translateY(-32px); }
+}
+
+/* Center Win/Loss Overlay Banner */
+.center-banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(15, 23, 42, 0.92);
+  border: 3px solid #ef4444;
+  border-radius: 16px;
+  padding: 26px 40px;
+  text-align: center;
+  z-index: 15;
+  box-shadow: 0 0 35px rgba(239, 68, 68, 0.6);
+  animation: popIn 0.25s ease-out;
+}
+
+.center-banner.win-banner {
+  border-color: #22c55e;
+  box-shadow: 0 0 35px rgba(34, 197, 94, 0.6);
+}
+
+.center-banner h2 {
+  font-size: 2.6rem;
+  font-weight: 900;
+  color: #ef4444;
+  margin-bottom: 8px;
+}
+
+.center-banner.win-banner h2 {
+  color: #4ade80;
+}
+
+.center-banner p {
+  font-size: 1.05rem;
+  color: #e2e8f0;
+  margin-bottom: 18px;
+}
+
+.center-banner.hidden {
+  display: none;
+}
+
+@keyframes popIn {
+  0% { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
 
 /* Modal Overlay */
 .modal-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(15, 23, 42, 0.88);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -219,8 +290,8 @@ body {
   background: #1e293b;
   border: 2px solid #38bdf8;
   border-radius: 14px;
-  padding: 26px;
-  max-width: 440px;
+  padding: 28px;
+  max-width: 450px;
   width: 90%;
   text-align: center;
 }
@@ -233,7 +304,7 @@ body {
 
 .modal-box p {
   font-size: 0.95rem;
-  line-height: 1.5;
+  line-height: 1.6;
   color: #cbd5e1;
   margin-bottom: 18px;
 }
@@ -262,7 +333,11 @@ select {
   font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn:active {
+  transform: scale(0.96);
 }
 
 .primary-btn {
