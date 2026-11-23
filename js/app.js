@@ -1,11 +1,6 @@
-/*----- Game Stages Data (2 Progressive Stages) -----*/
-const STAGES_DATA = [
-  { stage: 1, name: 'Desert Outpost', theme: 'theme-1', difficulty: 'Easy', targetCount: 4, shape: 'shape-circle', speed: 2.2, verticalSpeed: 0, size: 64, pointsPerHit: 10 },
-  { stage: 2, name: 'Forest Range', theme: 'theme-2', difficulty: 'Medium', targetCount: 5, shape: 'shape-square', speed: 2.7, verticalSpeed: 0, size: 60, pointsPerHit: 15 }
-];
+const MAX_ALLOWED_MISSES = 3; // 4th missed shot triggers a loss
 
-const MAX_ALLOWED_MISSES = 3;
-
+/*----- State Variables -----*/
 let currentStageIndex = 0;
 let score = 0;
 let missedShots = 0;
@@ -14,10 +9,13 @@ let isPlaying = false;
 let animationFrameId = null;
 let weaponX = 480;
 
-/*----- Background Music State Variables -----*/
+/*----- Audio State -----*/
+let audioCtx = null;
 let isMusicPlaying = false;
-let musicInterval = null;
+let musicIntervalId = null;
+let noteStep = 0;
 
+/*----- Cached DOM Elements -----*/
 const arenaEl = document.getElementById('game-arena');
 const targetsLayerEl = document.getElementById('targets-layer');
 const weaponEl = document.getElementById('weapon');
@@ -41,6 +39,7 @@ const instructionsBtn = document.getElementById('instructions-btn');
 const restartBtn = document.getElementById('restart-btn');
 const musicToggleBtn = document.getElementById('music-toggle-btn');
 
+/*----- Initialization -----*/
 function init() {
   populateStageDropdown();
   updateHUD();
@@ -56,6 +55,7 @@ function populateStageDropdown() {
   });
 }
 
+/*----- Game Flow Functions -----*/
 function startNewGame(startIndex = 0) {
   currentStageIndex = startIndex;
   score = 0;
@@ -139,6 +139,7 @@ function gameLoop() {
   animationFrameId = requestAnimationFrame(gameLoop);
 }
 
+/*----- Shooting & Collision Logic -----*/
 function handleAim(e) {
   if (!isPlaying) return;
   const rect = arenaEl.getBoundingClientRect();
@@ -151,7 +152,7 @@ function handleAim(e) {
 
 function handleShoot(e) {
   if (!isPlaying) return;
-  if (e.target.closest('.modal-overlay') || e.target.closest('.center-banner') || e.target.closest('.header-controls')) return;
+  if (e.target.closest('.modal-overlay') || e.target.closest('.center-banner')) return;
 
   weaponEl.classList.add('recoil');
   setTimeout(() => weaponEl.classList.remove('recoil'), 80);
@@ -172,9 +173,7 @@ function handleShoot(e) {
 
   if (hitIndex !== -1) {
     const hitTarget = activeTargets[hitIndex];
-    
-    /* Play Hit Sound Effect */
-    playShootSound(true);
+    playShootSound(true); // صوت الإصابة
 
     renderBulletTracer(weaponX, hitTarget.y + hitTarget.size / 2);
     showFeedback(weaponX, hitTarget.y, `+${stageConfig.pointsPerHit}`, 'hit-pop');
@@ -186,8 +185,7 @@ function handleShoot(e) {
     updateHUD();
     checkStageProgress();
   } else {
-    /* Play Miss Sound Effect */
-    playShootSound(false);
+    playShootSound(false); // صوت الخطأ
 
     renderBulletTracer(weaponX, 0);
     showFeedback(weaponX, arenaEl.clientHeight - 115, 'MISS!', 'miss-pop');
@@ -218,7 +216,7 @@ function checkStageProgress() {
     } else {
       showCenterBanner(
         'YOU WIN!',
-        `You conquered both stages! Final Score: ${score}`,
+        `You conquered all ${STAGES_DATA.length} stages! Final Score: ${score}`,
         'Play Again',
         true,
         () => startNewGame(0)
@@ -240,6 +238,7 @@ function triggerLossInCenter() {
   );
 }
 
+/*----- Center Banner & Visual Effects -----*/
 function showCenterBanner(title, subtext, btnText, isWin, actionCallback) {
   bannerTitleEl.textContent = title;
   bannerSubtextEl.textContent = subtext;
@@ -260,7 +259,7 @@ function showCenterBanner(title, subtext, btnText, isWin, actionCallback) {
 
 function renderBulletTracer(x, targetTopY) {
   const arenaHeight = arenaEl.clientHeight;
-  const startY = arenaHeight - 45;
+  const startY = arenaHeight - 88;
   const height = Math.max(10, startY - targetTopY);
 
   const tracer = document.createElement('div');
@@ -270,7 +269,7 @@ function renderBulletTracer(x, targetTopY) {
   tracer.style.height = `${height}px`;
 
   arenaEl.appendChild(tracer);
-  setTimeout(() => tracer.remove(), 120);
+  setTimeout(() => tracer.remove(), 90);
 }
 
 function showFeedback(x, y, text, className) {
@@ -293,84 +292,81 @@ function updateHUD() {
   scoreDisplayEl.textContent = score;
 }
 
-/*----- Web Audio API Sound Generator for Gun Shots -----*/
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-function playShootSound(isHit) {
+/*----- Web Audio API Functions (Sound Effects & Music) -----*/
+function initAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
   if (audioCtx.state === 'suspended') {
     audioCtx.resume();
   }
-
-  const oscillator = audioCtx.createOscillator();
-  const gainNode = audioCtx.createGain();
-
-  oscillator.type = isHit ? 'triangle' : 'sawtooth';
-  
-  const startFreq = isHit ? 520 : 180;
-  const endFreq = isHit ? 110 : 40;
-
-  oscillator.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
-  oscillator.frequency.exponentialRampToValueAtTime(endFreq, audioCtx.currentTime + 0.15);
-
-  gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-
-  oscillator.connect(gainNode);
-  gainNode.connect(audioCtx.destination);
-
-  oscillator.start();
-  oscillator.stop(audioCtx.currentTime + 0.15);
 }
 
-/*----- Relaxing & Upbeat Melodic Background Music Generator -----*/
-const melodyNotes = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63]; // C4, E4, G4, C5, G4, E4
-let melodyIndex = 0;
-
-function playComfortableBeat() {
-  if (!isMusicPlaying) return;
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-
+function playShootSound(isHit) {
+  initAudioContext();
+  const now = audioCtx.currentTime;
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
-
-  // Using 'triangle' wave for a smooth, relaxing, and comfortable sound tone
-  osc.type = 'triangle';
-  osc.frequency.setValueAtTime(melodyNotes[melodyIndex % melodyNotes.length], audioCtx.currentTime);
-  melodyIndex++;
-
-  // Low volume to keep it ambient and relaxing in the background
-  gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
 
   osc.connect(gain);
   gain.connect(audioCtx.destination);
 
-  osc.start();
-  osc.stop(audioCtx.currentTime + 0.4);
+  if (isHit) {
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(520, now);
+    osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+    osc.start(now);
+    osc.stop(now + 0.14);
+  } else {
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(190, now);
+    osc.frequency.exponentialRampToValueAtTime(95, now + 0.15);
+    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+    osc.start(now);
+    osc.stop(now + 0.16);
+  }
 }
 
 function toggleBackgroundMusic() {
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
-
-  isMusicPlaying = !isMusicPlaying;
+  initAudioContext();
 
   if (isMusicPlaying) {
-    musicToggleBtn.textContent = '🎵 Music: ON';
-    musicToggleBtn.style.background = '#22c55e';
-    musicToggleBtn.style.color = '#0f172a';
-    musicInterval = setInterval(playComfortableBeat, 350);
-  } else {
+    isMusicPlaying = false;
+    clearInterval(musicIntervalId);
     musicToggleBtn.textContent = '🎵 Music: OFF';
-    musicToggleBtn.style.background = '#334155';
-    musicToggleBtn.style.color = '#f1f5f9';
-    clearInterval(musicInterval);
+    musicToggleBtn.classList.remove('music-active');
+  } else {
+    isMusicPlaying = true;
+    musicToggleBtn.textContent = '🎵 Music: ON';
+    musicToggleBtn.classList.add('music-active');
+    const melodyNotes = [261.63, 329.63, 392.00, 493.88, 392.00, 329.63, 293.66, 392.00];
+
+    musicIntervalId = setInterval(() => {
+      if (!isMusicPlaying) return;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(melodyNotes[noteStep % melodyNotes.length], now);
+
+      gain.gain.setValueAtTime(0.045, now);
+      gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.35);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.36);
+      noteStep++;
+    }, 380);
   }
 }
 
-musicToggleBtn.addEventListener('click', toggleBackgroundMusic);
-
+/*----- Event Listeners -----*/
 arenaEl.addEventListener('mousemove', handleAim);
 arenaEl.addEventListener('mousedown', handleShoot);
 
@@ -389,5 +385,7 @@ instructionsBtn.addEventListener('click', () => {
 restartBtn.addEventListener('click', () => {
   startNewGame(0);
 });
+
+musicToggleBtn.addEventListener('click', toggleBackgroundMusic);
 
 init();

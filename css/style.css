@@ -94,8 +94,12 @@ body {
   transition: background 0.5s ease;
 }
 
-.theme-1 { background: linear-gradient(to bottom, #38bdf8 0%, #bae6fd 72%, #eab308 72%, #ca8a04 100%); }
-.theme-2 { background: linear-gradient(to bottom, #0284c7 0%, #7dd3fc 72%, #22c55e 72%, #15803d 100%); }
+/* 5 Stage Backgrounds */
+.theme-1 { background: linear-gradient(to bottom, #38bdf8 0%, #bae6fd 72%, #eab308 72%, #ca8a04 100%); } /* Desert Outpost */
+.theme-2 { background: linear-gradient(to bottom, #1e1b4b 0%, #312e81 72%, #475569 72%, #1e293b 100%); } /* Midnight Alley */
+.theme-3 { background: linear-gradient(to bottom, #4c1d95 0%, #6d28d9 72%, #3b0764 72%, #1e1b4b 100%); } /* Neon Cyber */
+.theme-4 { background: linear-gradient(to bottom, #164e63 0%, #0891b2 72%, #e2e8f0 72%, #94a3b8 100%); } /* Arctic Base */
+.theme-5 { background: radial-gradient(circle at top, #991b1b, #450a0a 72%, #000000 72%); } /* Final Fortress */
 
 .targets-layer {
   position: relative;
@@ -133,23 +137,30 @@ body {
   background: #ef4444;
 }
 
-.shape-square {
-  border-radius: 8px;
-  background: #fef3c7;
-  border: 4px solid #78350f;
+.shape-diamond {
+  border-radius: 6px;
+  background: #e0f2fe;
+  border: 4px solid #0369a1;
+  transform: rotate(45deg);
 }
-.shape-square::before {
+.shape-diamond::after {
   content: '';
-  width: 62%;
-  height: 62%;
-  border: 4px solid #d97706;
+  width: 30%;
+  height: 30%;
+  background: #0284c7;
 }
-.shape-square::after {
+
+.shape-gold {
+  border-radius: 50% 50% 12px 12px;
+  background: #fde047;
+  border: 4px solid #854d0e;
+}
+.shape-gold::after {
   content: '';
-  position: absolute;
-  width: 24%;
-  height: 24%;
-  background: #b45309;
+  width: 28%;
+  height: 28%;
+  border-radius: 50%;
+  background: #dc2626;
 }
 
 /* Player Weapon */
@@ -165,7 +176,6 @@ body {
   flex-direction: column;
   align-items: center;
   z-index: 5;
-  transition: transform 0.05s ease;
 }
 
 .gun-sight {
@@ -195,15 +205,13 @@ body {
   transform: translateX(-50%) translateY(9px);
 }
 
-/* Bullet Tracer / Laser Beam Effect */
 .bullet-tracer {
   position: absolute;
   width: 4px;
   background: #fde047;
-  box-shadow: 0 0 10px #facc15, 0 0 15px #f59e0b;
+  box-shadow: 0 0 10px #facc15;
   pointer-events: none;
   transform: translateX(-50%);
-  z-index: 4;
 }
 
 .feedback-pop {
@@ -213,7 +221,6 @@ body {
   pointer-events: none;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
   animation: floatUp 0.6s ease-out forwards;
-  z-index: 10;
 }
 
 .hit-pop { color: #4ade80; }
@@ -237,6 +244,7 @@ body {
   text-align: center;
   z-index: 15;
   box-shadow: 0 0 35px rgba(239, 68, 68, 0.6);
+  cursor: default;
   animation: popIn 0.25s ease-out;
 }
 
@@ -248,6 +256,7 @@ body {
 .center-banner h2 {
   font-size: 2.6rem;
   font-weight: 900;
+  letter-spacing: 1px;
   color: #ef4444;
   margin-bottom: 8px;
 }
@@ -271,7 +280,7 @@ body {
   100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
 
-/* Modal Overlay */
+/* Start & Instructions Modal */
 .modal-overlay {
   position: absolute;
   inset: 0;
@@ -280,6 +289,7 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 20;
+  cursor: default;
 }
 
 .modal-overlay.hidden {
@@ -344,6 +354,7 @@ select {
   background: #38bdf8;
   color: #0f172a;
 }
+
 .primary-btn:hover {
   background: #7dd3fc;
 }
@@ -352,6 +363,62 @@ select {
   background: #334155;
   color: #f1f5f9;
 }
+
 .secondary-btn:hover {
   background: #475569;
+}
+
+/* ===== Music Toggle Active State ===== */
+.music-active {
+  background-color: #22c55e !important;
+  color: #052e16 !important;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
+}
+
+.music-active:hover {
+  background-color: #4ade80 !important;
+}
+
+
+/* Player Weapon */
+.weapon {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 46px;
+  height: 80px;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 5;
+  transition: bottom 0.06s ease;
+}
+
+.gun-sight {
+  width: 6px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 2px;
+}
+
+.gun-barrel {
+  width: 14px;
+  height: 44px;
+  background: #cbd5e1;
+  border: 2px solid #0f172a;
+  border-radius: 3px 3px 0 0;
+}
+
+.gun-body {
+  width: 40px;
+  height: 28px;
+  background: #334155;
+  border: 2px solid #0f172a;
+  border-radius: 6px;
+}
+
+.weapon.recoil {
+  transform: translateX(-50%) translateY(9px);
 }
