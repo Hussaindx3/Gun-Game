@@ -1,73 +1,47 @@
 # Gun Challenge
 
-<img width="1376" height="768" alt="Gun Challenge game" src="https://github.com/user-attachments/assets/7c87ac0c-9e3f-41d7-bd07-da17fc960051" />
+## Game Link
 
-## About the Game
+https://hussaindx3.github.io/Gun-Game/
 
-**Gun Challenge** is a browser-based target shooting game. Targets move across the arena, and the player aims a gun at the bottom of the screen and shoots them down before running out of chances.
-
-The game has **5 stages**, each with its own environment, target shape, and difficulty. Every stage has more targets that move faster and get smaller, and each hit is worth more points.
-
-| Stage | Name | Difficulty | Targets | Points per Hit |
-|---|---|---|---|---|
-| 1 | Desert Outpost | Easy | 4 | 10 |
-| 2 | Midnight Alley | Easy | 6 | 20 |
-| 3 | Neon Cyber | Medium | 9 | 35 |
-| 4 | Arctic Base | Hard | 10 | 40 |
-| 5 | Final Fortress | Master | 14 | 100 |
-
-### Background
-
-I chose a shooting game because it is simple to understand but fun to master. Building it was a good way to practice DOM manipulation, moving elements with `requestAnimationFrame`, hit detection, and managing game state across multiple stages.
-
-## Getting Started
-
-**Play the game here:** [Gun Challenge](https://hussaindx3.github.io/Gun-Game/)
-
-**Planning materials:** [Project board](https://github.com/users/Hussaindx3/projects/2)
-
-### How to Play
-
-1. Choose a stage from the **Select Stage** menu and click **Play Now**.
-2. Move your mouse left and right to aim.
-3. Click inside the arena to shoot. Your shot hits the closest target above the gun.
-4. Clear all targets to move to the next stage.
-5. If you miss **more than 3 shots**, you lose.
-6. Clear all 5 stages to win the game.
-
-Use **How to Play** to see the rules again, **Restart** to start over from Stage 1, and **Music** to turn the background music on or off.
-
-## Attributions
-
-This project does not use any external libraries or assets. All sounds are generated with the Web Audio API, and all graphics (the gun, the targets, and the backgrounds) are drawn with CSS.
+Planning board: https://github.com/users/Hussaindx3/projects/2
 
 ## Technologies Used
 
-- HTML5
-- CSS3 (Flexbox, Grid, animations)
-- JavaScript (ES6)
-- Web Audio API
-- Git & GitHub
-- GitHub Pages (deployment)
-- GitHub Projects (planning)
+- HTML
+- CSS
+- JavaScript
 
-## Project Structure
+## Description
 
-```
-Gun-Game/
-├── index.html
-├── README.md
-├── css/
-│   └── style.css
-└── js/
-    ├── Data.js
-    └── app.js
-```
+A shooting game where targets move around the screen and you shoot them down. There are 5 stages: Desert Outpost, Midnight Alley, Neon Cyber, Arctic Base, and Final Fortress. Every stage has more targets, and they move faster. Clear all 5 stages to win.
 
-## Next Steps
+## How to Play
 
-- Save the high score in the browser with `localStorage`.
-- Add touch controls and a responsive layout so the game can be played on phones.
-- Add keyboard controls to make the game more accessible.
-- Add new target types, like targets that take two hits or move in patterns.
-- Add a volume slider for the music and sound effects.
+- Pick a stage and press Play Now.
+- Move the mouse left and right to aim.
+- Click to shoot.
+- Hit all the targets to go to the next stage.
+- If you miss more than 3 shots, you lose.
+
+## User Stories
+
+- As a user, I should see how to play before I start.
+- As a user, I should be able to pick a stage and press Play Now.
+- As a user, I should be able to aim with the mouse and click to shoot.
+- As a user, I should see the target disappear and my score go up when I hit it.
+- As a user, I should see "MISS!" when I miss a shot.
+- As a user, I should see my stage, score, targets left, and missed shots at the top.
+- As a user, I should see a message when I clear a stage or win the game.
+- As a user, I should see a message when I lose.
+- As a user, I should be able to play again without refreshing the page.
+
+## Screenshot
+
+<img width="1376" height="768" alt="Gun Challenge game" src="https://github.com/user-attachments/assets/7c87ac0c-9e3f-41d7-bd07-da17fc960051" />
+
+## Future Enhancements
+
+- Save the best score.
+- Make the game work on phones.
+- Add more target types.
