@@ -173,8 +173,7 @@ function handleShoot(e) {
 
   if (hitIndex !== -1) {
     const hitTarget = activeTargets[hitIndex];
-    playShootSound(true); // صوت الإصابة
-
+    playShootSound(true); 
     renderBulletTracer(weaponX, hitTarget.y + hitTarget.size / 2);
     showFeedback(weaponX, hitTarget.y, `+${stageConfig.pointsPerHit}`, 'hit-pop');
 
@@ -185,7 +184,7 @@ function handleShoot(e) {
     updateHUD();
     checkStageProgress();
   } else {
-    playShootSound(false); // صوت الخطأ
+    playShootSound(false); 
 
     renderBulletTracer(weaponX, 0);
     showFeedback(weaponX, arenaEl.clientHeight - 115, 'MISS!', 'miss-pop');
